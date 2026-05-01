@@ -1,0 +1,6 @@
+{
+  "name": "Advanced Schematic Designer",
+  "description": "A professional-grade circuit schematic design tool that works completely offline. Build, simulate, and export electronic diagrams.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["circuit-design", "pwa", "offline-first"]
+}

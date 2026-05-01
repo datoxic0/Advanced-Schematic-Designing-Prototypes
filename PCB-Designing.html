@@ -1,0 +1,1205 @@
+<html><head><base href>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PCB AI DESIGNER PRO v2.9</title>
+  <style>
+    :root {
+      --bg-color: #0a0a0c;
+      --panel-bg: #151518;
+      --accent: #4a90e2;
+      --accent-hover: #357abd;
+      --text: #eeeeef;
+      --text-dim: #929298;
+      --border: #2c2c2e;
+      --danger: #ff453a;
+      --success: #32d74b;
+      --warning: #ffcc00;
+      --sidebar-width: 280px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-color);
+      color: var(--text);
+      padding: 0;
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 0.6rem 1rem;
+      background: #000;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      gap: 1rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sidebar-toggle {
+      background: #2c2c2e;
+      border: 1px solid #3a3a3c;
+      color: #fff;
+      padding: 0.4rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .sidebar-toggle:hover { background: var(--accent); }
+
+    h1 {
+      font-size: 0.95rem;
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+    }
+
+    h1 span { color: #fff; font-weight: 400; opacity: 0.7; }
+
+    .top-toolbar {
+      background: var(--panel-bg);
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .command-row {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .command-box {
+      display: flex;
+      flex: 1;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .command-box input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 0.8rem;
+      flex: 1;
+      outline: none;
+      font-size: 0.85rem;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background: #2c2c2e;
+      color: #fff;
+      border: 1px solid #3a3a3c;
+      padding: 0.5rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: #3a3a3c; border-color: #4a90e2; }
+    .btn.primary { background: var(--accent); border-color: transparent; }
+    .btn.primary:hover { background: var(--accent-hover); }
+    .btn.active { background: var(--accent); border-color: #fff; box-shadow: 0 0 15px rgba(74,144,226,0.3); }
+    .btn.danger { background: #3a1c1c; color: #ff453a; border-color: #4a2c2c; }
+    .btn.danger:hover { background: var(--danger); color: #fff; }
+
+    .main-layout {
+      display: flex;
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--panel-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar.collapsed {
+      width: 0;
+      border-right: none;
+    }
+
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: #000;
+    }
+    .tab {
+      flex: 1;
+      padding: 0.8rem;
+      text-align: center;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-dim);
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--panel-bg); }
+
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .palette-item {
+      background: #1c1c1e;
+      border: 1px solid #2c2c2e;
+      border-radius: 8px;
+      padding: 0.6rem 0.2rem;
+      text-align: center;
+      cursor: grab;
+      transition: all 0.2s;
+    }
+    .palette-item:active { cursor: grabbing; }
+    .palette-item:hover { border-color: var(--accent); background: #252529; transform: translateY(-2px); }
+    .palette-item .icon { font-size: 1.2rem; margin-bottom: 0.2rem; }
+    .palette-item .label { font-size: 0.65rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; }
+
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      background: #080808;
+      overflow: hidden;
+    }
+
+    #pcb-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    .crosshair-v, .crosshair-h {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(74, 144, 226, 0.2);
+      z-index: 5;
+    }
+    .crosshair-v { width: 1px; height: 100%; top: 0; left: -10px; }
+    .crosshair-h { height: 1px; width: 100%; left: 0; top: -10px; }
+
+    #joystick-zone {
+      position: absolute;
+      bottom: 40px;
+      left: 40px;
+      width: 120px;
+      height: 120px;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .inspector-panel {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 280px;
+      background: rgba(20, 20, 22, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      display: none;
+      z-index: 200;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    }
+
+    .inspector-panel.visible { display: block; animation: slideIn 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+
+    .field-group { margin-bottom: 0.8rem; }
+    .field-group label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.3rem; }
+    .field-group input, .field-group select {
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .field-group input:focus { border-color: var(--accent); }
+
+    .status-bar {
+      padding: 0.4rem 1rem;
+      background: #000;
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-dim);
+    }
+
+    .footer {
+      background: #050505;
+      padding: 0.4rem 1rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.65rem;
+      color: #666;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .footer p { margin: 0; }
+    .footer a { color: #888; text-decoration: none; transition: color 0.2s; }
+    .footer a:hover { color: var(--accent); }
+
+    .loading-screen {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: #1c1c1e;
+      border: 1px solid #2c2c2e;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
+      position: relative;
+    }
+    .layer-item.active { border-color: var(--accent); background: rgba(74, 144, 226, 0.15); color: #fff; }
+    .layer-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .layer-del { 
+      margin-left: auto; 
+      opacity: 0.4; 
+      font-size: 0.9rem;
+      padding: 0.2rem;
+    }
+    .layer-del:hover { opacity: 1; color: var(--danger); }
+
+    #component-instance-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .instance-item {
+      font-size: 0.8rem;
+      padding: 0.4rem 0.6rem;
+      background: #1c1c1e;
+      border-radius: 4px;
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+    .instance-item:hover { color: #fff; background: #2c2c2e; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .top-toolbar { padding: 0.5rem; }
+      .inspector-panel { width: calc(100% - 2rem); right: 1rem; top: auto; bottom: 1rem; }
+      .btn { padding: 0.4rem 0.6rem; font-size: 0.75rem; }
+    }
+  </style>
+  <script type="importmap">{
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+      "nipplejs": "https://esm.sh/nipplejs"
+    }
+  }</script>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <button class="sidebar-toggle" id="toggle-sidebar" title="Toggle Sidebar">☰</button>
+      <h1>PCB AI DESIGNER <span>PRO v2.9</span></h1>
+    </div>
+    <div id="system-health" style="color: var(--success); font-size: 0.7rem; font-weight: 600;">● ENGINE ONLINE</div>
+  </header>
+
+  <div class="top-toolbar">
+    <div class="command-row">
+      <div class="command-box">
+        <input type="text" id="ai-input" placeholder="Try 'Add 100uF cap at center' or 'Route all components'...">
+      </div>
+      <button class="btn primary" id="ai-exec-btn">Execute AI</button>
+    </div>
+    <div class="btn-group">
+      <button class="btn active" id="btn-SELECT">🖱️ Select</button>
+      <button class="btn" id="btn-TRACE">🖊️ Trace</button>
+      <button class="btn" id="btn-VIA">🕳️ Via</button>
+      <button class="btn" id="btn-3d">🧊 3D View</button>
+      <button class="btn" id="btn-route">⚡ Auto-Route</button>
+      <button class="btn" id="btn-export">💾 Export</button>
+      <button class="btn danger" id="btn-clear">🗑️ Clear Board</button>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <div class="sidebar">
+      <div class="sidebar-tabs">
+        <div class="tab active" data-target="parts-tab">Palette</div>
+        <div class="tab" data-target="layers-tab">Project</div>
+      </div>
+      <div class="sidebar-content" id="parts-tab">
+        <div class="palette-grid" id="palette"></div>
+      </div>
+      <div class="sidebar-content" id="layers-tab" style="display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h3 style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); margin: 0;">Layers</h3>
+          <button class="btn primary" id="add-layer-btn" style="padding: 0.2rem 0.5rem; font-size: 0.6rem;">+ Add Layer</button>
+        </div>
+        <div id="layer-control"></div>
+        
+        <h3 style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); margin: 1.5rem 0 0.75rem 0;">Board Contents</h3>
+        <div id="component-instance-list"></div>
+      </div>
+    </div>
+
+    <div class="canvas-container" id="viewport">
+      <div class="crosshair-v" id="ch-v"></div>
+      <div class="crosshair-h" id="ch-h"></div>
+      <canvas id="pcb-canvas"></canvas>
+      <div id="joystick-zone"></div>
+      
+      <div class="inspector-panel" id="inspector">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+          <h4 id="inspect-title" style="margin: 0; font-size: 0.9rem;">Properties</h4>
+          <button class="btn danger" id="inspect-del" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">Delete</button>
+        </div>
+        <div id="inspect-fields"></div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button class="btn primary" id="inspect-save" style="flex: 1; justify-content: center;">Apply Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Developed by Siyabonga B Phakathi of The Voice & Eye of Bhambatha Inc. © 2026</p>
+    <span>|</span>
+    <a href="https://www.bhambathablog.wordpress.com" target="_blank">Blog</a>
+    <a href="https://www.facebook.com/C.Datoxic.P" target="_blank">FB</a>
+    <a href="https://www.websim.com/@whisperinggalaxyd" target="_blank">WebSim</a>
+    <a href="https://www.github.com/datoxic0" target="_blank">GitHub</a>
+    <a href="https://discord.com/channels/datoxic0" target="_blank">Discord</a>
+    <a href="https://x.com/Siya_B_Phakathi" target="_blank">X</a>
+  </footer>
+
+  <div class="status-bar">
+    <div id="status-coords">X: 0.00 Y: 0.00</div>
+    <div id="status-msg">Ready</div>
+    <div id="status-selection">No selection</div>
+  </div>
+
+  <div class="loading-screen" id="loader">
+    <div class="spinner"></div>
+    <div id="loader-text">AI is thinking...</div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import nipplejs from 'nipplejs';
+
+    const CONFIG = {
+      GRID: 0.1,
+      BOARD: { w: 6, h: 4, d: 0.08 },
+      COLORS: {
+        BOARD: 0x143424,
+        TOP: 0xffcc00,
+        BOTTOM: 0x00aaff,
+        SELECT: 0x4a90e2,
+        HOVER: 0xffffff,
+        VIA: 0xffd700,
+        SILK: 0xffffff
+      },
+      PARTS: [
+        { id: 'res', name: 'Resistor', icon: '⌭', color: 0x8b4513, scale: [0.35, 0.12, 0.12] },
+        { id: 'cap_pol', name: 'Cap (Pol)', icon: '⌬', color: 0x1e1e1e, scale: [0.2, 0.2, 0.3] },
+        { id: 'cap_cer', name: 'Cap (Cer)', icon: '⬡', color: 0xd2b48c, scale: [0.12, 0.12, 0.12] },
+        { id: 'ic8', name: 'DIP-8', icon: '🔲', color: 0x111111, scale: [0.4, 0.45, 0.15] },
+        { id: 'ic16', name: 'DIP-16', icon: '▤', color: 0x111111, scale: [0.8, 0.45, 0.15] },
+        { id: 'ic28', name: 'DIP-28', icon: '▤', color: 0x111111, scale: [1.4, 0.45, 0.15] },
+        { id: 'led', name: 'LED', icon: '💡', color: 0xff3b30, scale: [0.2, 0.2, 0.25] },
+        { id: 'tr', name: 'TO-92', icon: '⏉', color: 0x222222, scale: [0.2, 0.15, 0.25] },
+        { id: 'dio', name: 'Diode', icon: '⟛', color: 0x000000, scale: [0.3, 0.12, 0.12] },
+        { id: 'sw', name: 'Switch', icon: '⏻', color: 0x444444, scale: [0.3, 0.3, 0.2] },
+        { id: 'sw_tact', name: 'Tact Sw', icon: '🔘', color: 0x666666, scale: [0.2, 0.2, 0.15] },
+        { id: 'xtal', name: 'Crystal', icon: '⬦', color: 0xe5e5e5, scale: [0.4, 0.2, 0.15] },
+        { id: 'usb_c', name: 'USB-C', icon: '🔌', color: 0xcccccc, scale: [0.4, 0.4, 0.15] },
+        { id: 'pot', name: 'Pot', icon: '◎', color: 0x444444, scale: [0.4, 0.4, 0.4] },
+        { id: 'esp32', name: 'ESP32', icon: '📶', color: 0x222222, scale: [1.2, 0.8, 0.1] },
+        { id: 'battery', name: 'Battery', icon: '🔋', color: 0x999999, scale: [0.8, 0.8, 0.1] },
+        { id: 'relay', name: 'Relay', icon: '📦', color: 0x007aff, scale: [0.8, 0.6, 0.6] },
+        { id: 'lcd16x2', name: 'LCD 16x2', icon: '📟', color: 0x003300, scale: [2.5, 1.2, 0.2] },
+        { id: 'nano', name: 'Arduino Nano', icon: '♾️', color: 0x00878f, scale: [1.8, 0.7, 0.1] },
+        { id: 'oled', name: 'OLED 0.96"', icon: '🖼️', color: 0x111111, scale: [1.0, 1.0, 0.1] },
+        { id: 'buzzer', name: 'Buzzer', icon: '🔊', color: 0x000000, scale: [0.4, 0.4, 0.3] },
+        { id: 'mosfet', name: 'MOSFET', icon: '🚜', color: 0x222222, scale: [0.3, 0.1, 0.4] },
+        { id: 'jack', name: 'DC Jack', icon: '🔌', color: 0x111111, scale: [0.5, 0.3, 0.3] },
+        { id: 'sd_slot', name: 'SD Card', icon: '💾', color: 0xcccccc, scale: [0.6, 0.6, 0.05] },
+        { id: 'sonar', name: 'HC-SR04', icon: '🦇', color: 0x0066cc, scale: [1.5, 0.6, 0.4] },
+        { id: 'mpu6050', name: 'MPU6050', icon: '⚖️', color: 0x111111, scale: [0.6, 0.6, 0.1] },
+        { id: 'reg', name: '7805 Reg', icon: '🔋', color: 0x333333, scale: [0.3, 0.15, 0.4] },
+        { id: 'motor_drv', name: 'L298N', icon: '⚙️', color: 0x990000, scale: [1.4, 1.4, 0.6] },
+        { id: 'tft', name: 'TFT 2.4"', icon: '📱', color: 0x111111, scale: [2.0, 1.5, 0.2] },
+        { id: 'rfid', name: 'RC522', icon: '📡', color: 0x003366, scale: [1.2, 1.6, 0.1] },
+        { id: 'pi_pico', name: 'Pi Pico', icon: '🍓', color: 0x00a859, scale: [2.0, 0.8, 0.1] },
+        { id: 'bt_module', name: 'HC-05', icon: '🔵', color: 0x0000ff, scale: [1.0, 0.5, 0.1] },
+        { id: 'pir', name: 'PIR Sensor', icon: '🏃', color: 0xffffff, scale: [1.0, 1.0, 0.8] },
+        { id: 'rj45', name: 'RJ45 Port', icon: '🌐', color: 0x666666, scale: [0.6, 0.6, 0.5] },
+        { id: 'hdmi', name: 'HDMI Port', icon: '📺', color: 0x222222, scale: [0.6, 0.6, 0.2] },
+        { id: 'lipo', name: 'LiPo Bat', icon: '🔋', color: 0xc0c0c0, scale: [1.5, 1.0, 0.2] },
+        { id: 'speaker', name: 'Speaker', icon: '🔈', color: 0x111111, scale: [1.2, 1.2, 0.5] },
+        { id: 'microphone', name: 'Mic Module', icon: '🎤', color: 0x333333, scale: [0.4, 0.4, 0.1] },
+        { id: 'term_2', name: 'Term-2', icon: '🟢', color: 0x00aa00, scale: [0.4, 0.4, 0.4] },
+        { id: 'term_3', name: 'Term-3', icon: '🟢', color: 0x00aa00, scale: [0.6, 0.4, 0.4] },
+        { id: 'header_40', name: 'Pin Header', icon: '📶', color: 0x333333, scale: [2.5, 0.15, 0.3] },
+        { id: 'dht11', name: 'DHT11', icon: '🌡️', color: 0x007aff, scale: [0.5, 0.7, 0.3] },
+        { id: 'inductor', name: 'Inductor', icon: '🌀', color: 0xcd7f32, scale: [0.4, 0.4, 0.3] },
+        { id: 'fuse', name: 'Fuse Block', icon: '⚡', color: 0xcc0000, scale: [0.6, 0.3, 0.3] },
+        { id: 'wifi_ant', name: 'Antenna', icon: '📡', color: 0x000000, scale: [0.1, 1.5, 0.1] },
+        { id: 'servo', name: 'Servo Port', icon: '🕹️', color: 0x000000, scale: [0.4, 0.3, 0.3] },
+        { id: 'joy_module', name: 'Joystick', icon: '🕹️', color: 0x111111, scale: [1.2, 1.2, 0.8] },
+        { id: 'logic_level', name: 'Level Shifter', icon: '⚖️', color: 0x2c2c2e, scale: [0.6, 0.5, 0.1] }
+      ]
+    };
+
+    class PCBEditor {
+      constructor() {
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.controls = null;
+        this.joystick = null;
+        
+        this.state = {
+          components: new Map(),
+          traces: [],
+          vias: [],
+          layers: [
+            { id: 'top', name: 'Top Copper', color: '#ffcc00' },
+            { id: 'bottom', name: 'Bottom Copper', color: '#00aaff' }
+          ],
+          selectedId: null,
+          hoveredId: null,
+          mode: 'SELECT',
+          is3D: false,
+          activeLayerId: 'top',
+          isDragging: false,
+          sidebarCollapsed: false
+        };
+
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.dragPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+        this.draggedObj = null;
+        this.traceStart = null;
+        this.previewLine = null;
+        
+        this.init();
+      }
+
+      async init() {
+        this.setupThree();
+        this.setupUI();
+        this.setupEvents();
+        this.setupMobileControls();
+        this.createBoard();
+        this.load();
+        this.renderAll();
+        this.animate();
+        this.updateStatus("System Online");
+      }
+
+      setupThree() {
+        const container = document.getElementById('viewport');
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x080808);
+
+        this.camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+        this.camera.position.set(0, 0, 8);
+
+        this.renderer = new THREE.WebGLRenderer({
+          canvas: document.getElementById('pcb-canvas'),
+          antialias: true,
+          alpha: true
+        });
+        this.renderer.setSize(container.offsetWidth, container.offsetHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.shadowMap.enabled = true;
+
+        const amb = new THREE.AmbientLight(0xffffff, 0.6);
+        this.scene.add(amb);
+        
+        const dir = new THREE.DirectionalLight(0xffffff, 1);
+        dir.position.set(5, 5, 10);
+        dir.castShadow = true;
+        this.scene.add(dir);
+
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableRotate = false;
+        this.controls.screenSpacePanning = true;
+        // Standard CAD-like controls: Right click to pan, Left click to rotate (when enabled)
+        this.controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
+        this.controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN };
+        this.controls.minPolarAngle = 0;
+        this.controls.maxPolarAngle = Math.PI;
+      }
+
+      setupUI() {
+        const palette = document.getElementById('palette');
+        CONFIG.PARTS.forEach(p => {
+          const el = document.createElement('div');
+          el.className = 'palette-item';
+          el.innerHTML = `<div class="icon">${p.icon}</div><div class="label">${p.name}</div>`;
+          el.draggable = true;
+          el.onclick = () => this.addComponent(p.id);
+          el.ondragstart = (e) => e.dataTransfer.setData('partId', p.id);
+          palette.appendChild(el);
+        });
+
+        document.querySelectorAll('.tab').forEach(t => {
+          t.onclick = () => {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.sidebar-content').forEach(c => c.style.display = 'none');
+            t.classList.add('active');
+            document.getElementById(t.dataset.target).style.display = 'block';
+          };
+        });
+
+        ['SELECT', 'TRACE', 'VIA'].forEach(m => {
+          document.getElementById(`btn-${m}`).onclick = () => this.setMode(m);
+        });
+
+        document.getElementById('btn-3d').onclick = () => this.toggle3D();
+        document.getElementById('btn-clear').onclick = () => this.clearAll();
+        document.getElementById('btn-route').onclick = () => this.autoRoute();
+        document.getElementById('btn-export').onclick = () => this.exportDesign();
+        document.getElementById('inspect-save').onclick = () => this.saveInspector();
+        document.getElementById('inspect-del').onclick = () => this.deleteSelected();
+        document.getElementById('ai-exec-btn').onclick = () => this.execAI();
+        document.getElementById('toggle-sidebar').onclick = () => this.toggleSidebar();
+
+        const viewport = document.getElementById('viewport');
+        viewport.ondragover = (e) => e.preventDefault();
+        viewport.ondrop = (e) => {
+          e.preventDefault();
+          const partId = e.dataTransfer.getData('partId');
+          const pt = this.getIntersectPoint();
+          if (partId && pt) this.addComponent(partId, pt.x, pt.y);
+        };
+      }
+
+      setupEvents() {
+        const canvas = this.renderer.domElement;
+        const crossV = document.getElementById('ch-v');
+        const crossH = document.getElementById('ch-h');
+        
+        const handleInteraction = (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+          this.mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+          crossV.style.left = `${clientX - rect.left}px`;
+          crossH.style.top = `${clientY - rect.top}px`;
+        };
+
+        canvas.addEventListener('mousedown', (e) => { handleInteraction(e); this.onInteractionStart(e); });
+        canvas.addEventListener('touchstart', (e) => { handleInteraction(e); this.onInteractionStart(e); });
+        canvas.addEventListener('mousemove', (e) => { handleInteraction(e); this.onInteractionMove(e); });
+        canvas.addEventListener('touchmove', (e) => { handleInteraction(e); this.onInteractionMove(e); });
+        window.addEventListener('mouseup', () => this.onInteractionEnd());
+        window.addEventListener('touchend', () => this.onInteractionEnd());
+        window.addEventListener('keydown', (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+          if (e.key === 'Delete' || e.key === 'Backspace') this.deleteSelected();
+          if (e.key === 'r' || e.key === 'R') this.rotateSelected();
+          if (e.key === 'Escape') this.setMode('SELECT');
+        });
+      }
+
+      setupMobileControls() {
+        const zone = document.getElementById('joystick-zone');
+        if (window.matchMedia("(max-width: 768px)").matches) {
+          this.joystick = nipplejs.create({
+            zone, mode: 'static', position: { left: '60px', bottom: '60px' }, color: 'white'
+          });
+          this.joystick.on('move', (evt, data) => {
+            const force = data.force * 0.05;
+            this.camera.position.x += Math.cos(data.angle.radian) * force;
+            this.camera.position.y += Math.sin(data.angle.radian) * force;
+          });
+        }
+      }
+
+      getIntersectPoint() {
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const intersect = new THREE.Vector3();
+        if (this.raycaster.ray.intersectPlane(this.dragPlane, intersect)) {
+          intersect.x = Math.round(intersect.x / CONFIG.GRID) * CONFIG.GRID;
+          intersect.y = Math.round(intersect.y / CONFIG.GRID) * CONFIG.GRID;
+          return intersect;
+        }
+        return null;
+      }
+
+      toggleSidebar() {
+        this.state.sidebarCollapsed = !this.state.sidebarCollapsed;
+        document.querySelector('.sidebar').classList.toggle('collapsed', this.state.sidebarCollapsed);
+        setTimeout(() => {
+          const container = document.getElementById('viewport');
+          this.renderer.setSize(container.offsetWidth, container.offsetHeight);
+          this.camera.aspect = container.offsetWidth / container.offsetHeight;
+          this.camera.updateProjectionMatrix();
+        }, 300);
+      }
+
+      onInteractionStart(e) {
+        const pt = this.getIntersectPoint();
+        if (!pt) return;
+
+        if (this.state.mode === 'TRACE') {
+          if (!this.traceStart) {
+            this.traceStart = pt.clone();
+          } else {
+            this.addTrace(this.traceStart, pt);
+            this.traceStart = null;
+            if (this.previewLine) { this.scene.remove(this.previewLine); this.previewLine = null; }
+          }
+          return;
+        }
+
+        if (this.state.mode === 'VIA') {
+          this.addVia(pt);
+          return;
+        }
+
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+        let found = null;
+        for (let i = 0; i < intersects.length; i++) {
+          let o = intersects[i].object;
+          while (o && !o.userData?.id) o = o.parent;
+          if (o?.userData?.id) { found = o; break; }
+        }
+
+        if (found) {
+          const id = found.userData.id;
+          this.select(id);
+          // Only allow dragging if we are in SELECT mode AND it's a component
+          // In 3D mode, we might want to prioritize rotation unless we explicitly drag
+          if (found.userData.type === 'comp' && this.state.mode === 'SELECT') {
+            this.draggedObj = found;
+            this.state.isDragging = true;
+            this.controls.enabled = false;
+            document.getElementById('inspector').classList.remove('visible');
+          }
+        } else {
+          this.select(null);
+          // If clicking background in 3D, ensure OrbitControls handles rotation
+          if (this.state.is3D) {
+            this.controls.enabled = true;
+          }
+        }
+      }
+
+      onInteractionMove(e) {
+        const pt = this.getIntersectPoint();
+        if (!pt) return;
+        document.getElementById('status-coords').textContent = `X: ${pt.x.toFixed(2)} Y: ${pt.y.toFixed(2)}`;
+
+        // Hover Detection
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+        let newHoverId = null;
+        for (let i = 0; i < intersects.length; i++) {
+          let o = intersects[i].object;
+          while (o && !o.userData?.id) o = o.parent;
+          if (o?.userData?.id) { newHoverId = o.userData.id; break; }
+        }
+        
+        if (newHoverId !== this.state.hoveredId) {
+          this.state.hoveredId = newHoverId;
+          this.updateHighlights();
+        }
+
+        if (this.draggedObj && this.state.isDragging) {
+          this.draggedObj.position.x = pt.x;
+          this.draggedObj.position.y = pt.y;
+          const comp = this.state.components.get(this.draggedObj.userData.id);
+          if (comp) { comp.x = pt.x; comp.y = pt.y; }
+        }
+
+        if (this.state.mode === 'TRACE' && this.traceStart) {
+          this.renderPreview(this.traceStart, pt);
+        }
+      }
+
+      onInteractionEnd() {
+        if (this.state.isDragging) {
+          this.state.isDragging = false;
+          this.draggedObj = null;
+          if (!this.state.is3D) this.controls.enabled = true;
+          this.save();
+          this.showInspector(); // Show again after drag
+        }
+      }
+
+      updateHighlights() {
+        this.scene.traverse(o => {
+          if (o.userData?.id) {
+            const isHovered = o.userData.id === this.state.hoveredId;
+            const isSelected = o.userData.id === this.state.selectedId;
+            if (o.userData.type === 'comp') {
+              const ring = o.children.find(c => c.name === 'select_ring');
+              if (ring) {
+                ring.visible = isSelected || isHovered;
+                ring.material.color.setHex(isSelected ? CONFIG.COLORS.SELECT : CONFIG.COLORS.HOVER);
+                ring.scale.setScalar(isSelected ? 1.0 : 0.95);
+              }
+            }
+          }
+        });
+      }
+
+      setMode(m) {
+        this.state.mode = m;
+        this.traceStart = null;
+        if (this.previewLine) { this.scene.remove(this.previewLine); this.previewLine = null; }
+        document.querySelectorAll('.btn-group .btn').forEach(b => {
+          if (b.id === `btn-${m}`) b.classList.add('active');
+          else if (!['btn-3d','btn-route','btn-clear','btn-export'].includes(b.id)) b.classList.remove('active');
+        });
+        this.updateStatus(`Mode: ${m}`);
+      }
+
+      toggle3D() {
+        this.state.is3D = !this.state.is3D;
+        this.controls.enableRotate = this.state.is3D;
+        
+        const btn = document.getElementById('btn-3d');
+        if (this.state.is3D) {
+          btn.classList.add('active');
+          this.camera.position.set(5, -5, 6);
+          this.controls.mouseButtons.LEFT = THREE.MOUSE.ROTATE;
+          this.updateStatus("3D Mode: Use Left Click to Rotate");
+        } else {
+          btn.classList.remove('active');
+          this.camera.position.set(0, 0, 8);
+          this.camera.rotation.set(0,0,0);
+          this.controls.mouseButtons.LEFT = null; // Prevent rotation in 2D
+          this.updateStatus("2D Mode: Locked to Top View");
+        }
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+        this.renderAll();
+      }
+
+      createBoard() {
+        const { w, h, d } = CONFIG.BOARD;
+        const geo = new THREE.BoxGeometry(w, h, d);
+        const mat = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.BOARD, roughness: 0.5, metalness: 0.1 });
+        const board = new THREE.Mesh(geo, mat);
+        board.position.z = -d/2;
+        board.receiveShadow = true;
+        this.scene.add(board);
+
+        const grid = new THREE.GridHelper(10, 50, 0x222222, 0x151515);
+        grid.rotation.x = Math.PI/2;
+        grid.position.z = 0.001;
+        this.scene.add(grid);
+      }
+
+      addComponent(type, x = 0, y = 0) {
+        const id = `${type.toUpperCase()}_${Math.random().toString(36).substr(2, 4)}`;
+        const comp = { id, type, x, y, rot: 0, layer: this.state.activeLayerId, props: { ref: id, value: '', footprint: 'SMD' } };
+        this.state.components.set(id, comp);
+        this.renderAll();
+        this.save();
+        this.select(id);
+      }
+
+      addTrace(s, e) {
+        const trace = { id: `TR_${Date.now().toString().slice(-4)}`, layer: this.state.activeLayerId, p1: [s.x, s.y], p2: [e.x, e.y], w: 0.12 };
+        this.state.traces.push(trace);
+        this.renderAll();
+        this.save();
+      }
+
+      addVia(pt) {
+        const via = { id: `VIA_${Date.now().toString().slice(-4)}`, x: pt.x, y: pt.y };
+        this.state.vias.push(via);
+        this.renderAll();
+        this.save();
+      }
+
+      select(id) {
+        this.state.selectedId = id;
+        document.getElementById('status-selection').textContent = id ? `Selection: ${id}` : 'No selection';
+        this.updateHighlights();
+        this.showInspector();
+      }
+
+      deleteSelected() {
+        if (!this.state.selectedId) return;
+        const id = this.state.selectedId;
+        if (this.state.components.has(id)) this.state.components.delete(id);
+        else {
+          this.state.traces = this.state.traces.filter(t => t.id !== id);
+          this.state.vias = this.state.vias.filter(v => v.id !== id);
+        }
+        this.select(null);
+        this.renderAll();
+        this.save();
+      }
+
+      rotateSelected() {
+        if (!this.state.selectedId) return;
+        const comp = this.state.components.get(this.state.selectedId);
+        if (comp) {
+          comp.rot += Math.PI / 2;
+          this.renderAll();
+          this.save();
+        }
+      }
+
+      renderAll() {
+        const trash = [];
+        this.scene.traverse(o => { if (o.userData?.renderable) trash.push(o); });
+        trash.forEach(o => {
+          if (o.geometry) o.geometry.dispose();
+          if (o.material) {
+            if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
+            else o.material.dispose();
+          }
+          this.scene.remove(o);
+        });
+
+        this.state.components.forEach(c => this.scene.add(this.createCompMesh(c)));
+        this.state.traces.forEach(t => this.scene.add(this.createTraceMesh(t)));
+        this.state.vias.forEach(v => this.scene.add(this.createViaMesh(v)));
+        this.updateSidebarList();
+        this.updateLayerUI();
+      }
+
+      createCompMesh(c) {
+        const def = CONFIG.PARTS.find(p => p.id === c.type) || CONFIG.PARTS[0];
+        const group = new THREE.Group();
+        const layerIdx = this.state.layers.findIndex(l => l.id === c.layer);
+        const zPos = 0.05 + (layerIdx * 0.02);
+        
+        group.position.set(c.x, c.y, zPos);
+        group.rotation.z = c.rot;
+        if (c.layer === 'bottom') group.rotation.x = Math.PI;
+        group.userData = { id: c.id, type: 'comp', renderable: true };
+
+        const opacity = (!this.state.is3D && this.state.activeLayerId !== c.layer) ? 0.2 : 1.0;
+
+        const ringGeo = new THREE.RingGeometry(0.5, 0.55, 32);
+        const ringMat = new THREE.MeshBasicMaterial({ color: CONFIG.COLORS.SELECT, side: THREE.DoubleSide });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.name = 'select_ring';
+        ring.visible = this.state.selectedId === c.id || this.state.hoveredId === c.id;
+        group.add(ring);
+
+        const bodyGeo = new THREE.BoxGeometry(...def.scale);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: def.color, transparent: opacity < 1, opacity });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.castShadow = true;
+        group.add(body);
+
+        const silkGeo = new THREE.EdgesGeometry(new THREE.PlaneGeometry(def.scale[0]+0.1, def.scale[1]+0.1));
+        const silkMat = new THREE.LineBasicMaterial({ color: CONFIG.COLORS.SILK, transparent: opacity < 1, opacity: opacity * 0.4 });
+        const silk = new THREE.LineSegments(silkGeo, silkMat);
+        silk.position.z = c.layer === 'top' ? -0.04 : 0.04;
+        group.add(silk);
+
+        return group;
+      }
+
+      createTraceMesh(t) {
+        const layer = this.state.layers.find(l => l.id === t.layer) || this.state.layers[0];
+        const layerIdx = this.state.layers.indexOf(layer);
+        const z = 0.035 + (layerIdx * 0.02);
+        const opacity = (!this.state.is3D && this.state.activeLayerId !== t.layer) ? 0.15 : 1.0;
+        
+        const v1 = new THREE.Vector3(t.p1[0], t.p1[1], z);
+        const v2 = new THREE.Vector3(t.p2[0], t.p2[1], z);
+        const dir = new THREE.Vector3().subVectors(v2, v1);
+        const len = dir.length();
+        const geo = new THREE.PlaneGeometry(t.w, len || 0.01);
+        const mat = new THREE.MeshStandardMaterial({ 
+          color: layer.color, metalness: 0.7, roughness: 0.3, side: THREE.DoubleSide,
+          transparent: true, opacity
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.addVectors(v1, v2).multiplyScalar(0.5);
+        mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+        mesh.userData = { id: t.id, type: 'trace', renderable: true };
+        return mesh;
+      }
+
+      createViaMesh(v) {
+        const geo = new THREE.CylinderGeometry(0.06, 0.06, 0.25, 16);
+        const mat = new THREE.MeshStandardMaterial({ color: CONFIG.COLORS.VIA, metalness: 0.9 });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.rotation.x = Math.PI/2;
+        mesh.position.set(v.x, v.y, -0.04);
+        mesh.userData = { id: v.id, type: 'via', renderable: true };
+        return mesh;
+      }
+
+      renderPreview(s, e) {
+        if (this.previewLine) this.scene.remove(this.previewLine);
+        const points = [new THREE.Vector3(s.x, s.y, 0.06), new THREE.Vector3(e.x, e.y, 0.06)];
+        const geo = new THREE.BufferGeometry().setFromPoints(points);
+        const mat = new THREE.LineBasicMaterial({ color: CONFIG.COLORS.SELECT });
+        this.previewLine = new THREE.Line(geo, mat);
+        this.scene.add(this.previewLine);
+      }
+
+      showInspector() {
+        const panel = document.getElementById('inspector');
+        const fields = document.getElementById('inspect-fields');
+        const title = document.getElementById('inspect-title');
+        
+        if (!this.state.selectedId || this.state.isDragging) { panel.classList.remove('visible'); return; }
+        
+        const id = this.state.selectedId;
+        const comp = this.state.components.get(id);
+        
+        panel.classList.add('visible');
+        fields.innerHTML = '';
+        
+        if (comp) {
+          title.textContent = `${comp.id}`;
+          
+          // Basic fields
+          fields.innerHTML += `<div class="field-group"><label>Reference</label><input type="text" data-key="ref" value="${comp.props.ref || comp.id}"></div>`;
+          fields.innerHTML += `<div class="field-group"><label>Value</label><input type="text" data-key="value" value="${comp.props.value || ''}"></div>`;
+          
+          // Layer selection
+          let layerOpts = this.state.layers.map(l => `<option value="${l.id}" ${comp.layer === l.id ? 'selected' : ''}>${l.name}</option>`).join('');
+          fields.innerHTML += `<div class="field-group"><label>Layer</label><select data-key="layer">${layerOpts}</select></div>`;
+          
+          // Rotation
+          fields.innerHTML += `<div class="field-group"><label>Rotation (deg)</label><input type="number" data-key="rotation" value="${Math.round(comp.rot * 180 / Math.PI)}"></div>`;
+        } else {
+          title.textContent = `Route: ${id}`;
+          fields.innerHTML = '<p style="font-size: 0.75rem; color: var(--text-dim);">Trace selected. Adjusting thickness coming soon.</p>';
+        }
+      }
+
+      saveInspector() {
+        const id = this.state.selectedId;
+        const comp = this.state.components.get(id);
+        if (comp) {
+          const inputs = document.querySelectorAll('#inspect-fields input, #inspect-fields select');
+          inputs.forEach(inp => {
+            const key = inp.dataset.key;
+            if (key === 'layer') comp.layer = inp.value;
+            else if (key === 'rotation') comp.rot = (parseFloat(inp.value) || 0) * Math.PI / 180;
+            else if (key === 'ref') comp.props.ref = inp.value;
+            else if (key === 'value') comp.props.value = inp.value;
+          });
+          this.updateStatus(`Saved ${id}`);
+          this.renderAll();
+          this.save();
+        }
+      }
+
+      setLayer(l) {
+        this.state.activeLayerId = l;
+        this.renderAll();
+      }
+
+      addCustomLayer() {
+        const name = prompt("Layer Name:", "Inner Layer 1");
+        if (!name) return;
+        const id = `layer_${Date.now().toString(36)}`;
+        const color = `#${Math.floor(Math.random()*16777215).toString(16)}`;
+        this.state.layers.push({ id, name, color });
+        this.save();
+        this.renderAll();
+      }
+
+      deleteLayer(id) {
+        if (id === 'top' || id === 'bottom') return alert("Cannot delete copper layers.");
+        if (confirm(`Delete ${id}?`)) {
+          this.state.layers = this.state.layers.filter(l => l.id !== id);
+          this.state.components.forEach((c, cid) => { if (c.layer === id) this.state.components.delete(cid); });
+          this.state.traces = this.state.traces.filter(t => t.layer !== id);
+          if (this.state.activeLayerId === id) this.state.activeLayerId = 'top';
+          this.save();
+          this.renderAll();
+        }
+      }
+
+      updateLayerUI() {
+        const ctrl = document.getElementById('layer-control');
+        ctrl.innerHTML = '';
+        this.state.layers.forEach(l => {
+          const item = document.createElement('div');
+          item.className = `layer-item ${this.state.activeLayerId === l.id ? 'active' : ''}`;
+          item.innerHTML = `<div class="layer-dot" style="background:${l.color}"></div><span>${l.name}</span><div class="layer-del" onclick="event.stopPropagation(); editor.deleteLayer('${l.id}')">×</div>`;
+          item.onclick = () => this.setLayer(l.id);
+          ctrl.appendChild(item);
+        });
+      }
+
+      updateSidebarList() {
+        const list = document.getElementById('component-instance-list');
+        list.innerHTML = '';
+        this.state.components.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'instance-item';
+          div.textContent = `${c.props.ref || c.id} (${c.type})`;
+          div.onclick = () => this.select(c.id);
+          list.appendChild(div);
+        });
+      }
+
+      async execAI() {
+        const input = document.getElementById('ai-input').value;
+        if (!input) return;
+        this.setLoading(true, "AI Analyzing...");
+        try {
+          const completion = await websim.chat.completions.create({
+            messages: [
+              {
+                role: "system",
+                content: `Expert PCB assistant. Returns JSON list of actions. Actions: add (type, x, y), route (from, to). Types: res, led, ic8, ic16, esp32, nano, oled, battery, relay, sonar, pi_pico. Limit: X[-3,3], Y[-2,2].`
+              },
+              { role: "user", content: input }
+            ],
+            json: true
+          });
+          const result = JSON.parse(completion.content);
+          if (result.actions) {
+            result.actions.forEach(a => {
+              if (a.action === 'add') this.addComponent(a.type, a.x, a.y);
+              if (a.action === 'route') {
+                const c1 = this.state.components.get(a.from);
+                const c2 = this.state.components.get(a.to);
+                if (c1 && c2) this.addTrace({x: c1.x, y: c1.y}, {x: c2.x, y: c2.y});
+              }
+            });
+          }
+          this.updateStatus("AI Magic Applied");
+        } catch (e) { this.updateStatus("AI Engine Error"); }
+        finally { this.setLoading(false); document.getElementById('ai-input').value = ''; }
+      }
+
+      autoRoute() {
+        this.setLoading(true, "Routing...");
+        setTimeout(() => {
+          const comps = Array.from(this.state.components.values());
+          for(let i=0; i<comps.length-1; i++) this.addTrace({x: comps[i].x, y: comps[i].y}, {x: comps[i+1].x, y: comps[i+1].y});
+          this.setLoading(false);
+          this.updateStatus("Auto-Route Done");
+        }, 600);
+      }
+
+      exportDesign() {
+        const data = JSON.stringify({ components: Array.from(this.state.components.entries()), traces: this.state.traces, vias: this.state.vias }, null, 2);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([data], {type: 'application/json'}));
+        a.download = `DESIGN_${Date.now()}.json`;
+        a.click();
+      }
+
+      clearAll() {
+        if(confirm("Wipe board?")) {
+          this.state.components.clear();
+          this.state.traces = [];
+          this.state.vias = [];
+          this.renderAll();
+          this.save();
+          this.select(null);
+        }
+      }
+
+      setLoading(show, text) {
+        document.getElementById('loader').style.display = show ? 'flex' : 'none';
+        document.getElementById('loader-text').textContent = text;
+      }
+
+      updateStatus(msg) { document.getElementById('status-msg').textContent = msg; }
+
+      save() {
+        const data = { comps: Array.from(this.state.components.entries()), traces: this.state.traces, vias: this.state.vias, layers: this.state.layers };
+        localStorage.setItem('pcb_v29_data', JSON.stringify(data));
+      }
+
+      load() {
+        const saved = localStorage.getItem('pcb_v29_data');
+        if (saved) {
+          const data = JSON.parse(saved);
+          this.state.components = new Map(data.comps);
+          this.state.traces = data.traces || [];
+          this.state.vias = data.vias || [];
+          if (data.layers) this.state.layers = data.layers;
+        }
+      }
+
+      animate() {
+        requestAnimationFrame(() => this.animate());
+        this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+
+    window.editor = new PCBEditor();
+  </script>
+</body>
+</html>

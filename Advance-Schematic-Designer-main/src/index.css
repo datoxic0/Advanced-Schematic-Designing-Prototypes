@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --bg: #020617; /* slate-950 */
+  --sidebar: #0f172a; /* slate-900 */
+  --card: #1e293b; /* slate-800 */
+  --accent: #6366f1; /* indigo-500 */
+  --highlight: #10b981; /* emerald-500 */
+  --text-main: #cbd5e1; /* slate-300 */
+  --text-muted: #64748b; /* slate-500 */
+  --border: #1e293b; /* slate-800 */
+}
+
+body {
+  @apply antialiased overflow-hidden text-slate-300 bg-slate-950;
+  font-family: var(--font-sans);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155; /* slate-700 */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Specific selections */
+::selection {
+  background-color: var(--accent);
+  color: white;
+}
+
+.glass-header {
+  @apply bg-slate-900/50 backdrop-blur-md border-b border-slate-800;
+}
+
+.sidebar-panel {
+  @apply bg-slate-900 border-slate-800;
+}
+
+.tech-card {
+  @apply bg-slate-800/50 border border-slate-700 rounded-lg hover:border-indigo-500 transition-all;
+}
